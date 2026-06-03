@@ -1,0 +1,124 @@
+#:kivy 1.0.0
+
+<PongBall>:
+    size: 22, 22  # Standard scaled size for a 40mm ball
+    canvas:
+        # Subtle drop shadow for realism
+        Color:
+            rgba: (0, 0, 0, 0.2)
+        Ellipse:
+            pos: self.x + 2, self.y - 3
+            size: self.size
+        # The physical orange ball
+        Color:
+            rgb: (1, 0.55, 0) 
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<PongPaddle>:
+    size: 24, 90 
+    canvas:
+        # Wooden Blade / Handle Extension Base
+        Color:
+            rgb: (0.6, 0.4, 0.2)
+        Rectangle:
+            pos: (self.x - 8, self.center_y - 6) if self.x < 400 else (self.right, self.center_y - 6)
+            size: (8, 12) if self.x < 400 else (8, 12)
+        # Rubber Face Layer (Red for Player, Black for AI/Opponent)
+        Color:
+            rgb: (0.85, 0.08, 0.18) if self.x < 400 else (0.1, 0.1, 0.1) 
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [12]
+
+<PongGame>:
+    ball: pong_ball
+    player1: player_left
+    player2: player_right
+    
+    canvas:
+        # 1. Main Matte Tournament Blue Table Surface
+        Color:
+            rgb: (0.08, 0.25, 0.45) 
+        Rectangle:
+            size: self.size
+            pos: self.pos
+            
+        # 2. Outer White Boundary Line (Side Lines & End Lines)
+        Color:
+            rgb: (0.95, 0.95, 0.95)
+        Line:
+            rectangle: (root.x + 10, root.y + 10, root.width - 20, root.height - 20)
+            width: 3
+
+        # 3. Center White Line (Doubles Court Division Tape)
+        Color:
+            rgba: (0.95, 0.95, 0.95, 0.6)
+        Line:
+            points: [root.x + 10, root.center_y, root.width - 10, root.center_y]
+            width: 1.5
+            
+        # 4. Standard Net Setup (Extending across the center axis)
+        Color:
+            rgba: (0.1, 0.1, 0.1, 0.3) # Net structural grid texture
+        Rectangle:
+            pos: root.center_x - 3, 5
+            size: 6, root.height - 10
+        Color:
+            rgb: (1, 1, 1) # White Net Top Tape
+        Line:
+            points: [root.center_x, 10, root.center_x, root.height - 10]
+            width: 2
+            
+    Label:
+        font_size: 80
+        font_name: 'Roboto'
+        color: (1, 1, 1, 0.4) # Faded scoreboard integration
+        center_x: root.width / 4
+        top: root.top - 40
+        text: str(root.player1.score)
+        
+    Label:
+        font_size: 80
+        font_name: 'Roboto'
+        color: (1, 1, 1, 0.4)
+        center_x: root.width * 3 / 4
+        top: root.top - 40
+        text: str(root.player2.score)
+    
+    PongBall:
+        id: pong_ball
+        center: self.parent.center if root.game_active else (-100, -100)
+        
+    PongPaddle:
+        id: player_left
+        x: root.x + 40
+        center_y: root.center_y
+        
+    PongPaddle:
+        id: player_right
+        x: root.width - self.width - 40
+        center_y: root.center_y
+
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: 'vertical'
+        opacity: 0 if root.game_active else 1
+        
+        canvas.before:
+            Color:
+                rgba: (0, 0, 0, 0.8) 
+            Rectangle:
+                size: self.size
+                pos: self.pos
+                
+        Label:
+            text: root.game_over_message
+            font_size: '45sp'
+            halign: 'center'
+            valign: 'middle'
+            line_height: 1.3
+            color: (1, 1, 1, 1)
